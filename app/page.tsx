@@ -88,35 +88,35 @@ export default function LandingPage() {
           </p>
         </div>
 
-        <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-stretch sm:gap-6">
+        <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-6">
           <Card
-            className="flex w-72 cursor-pointer flex-col border-border transition-all hover:border-primary/40 hover:shadow-md"
+            className="w-72 cursor-pointer border-border transition-all hover:border-primary/40 hover:shadow-md"
             onClick={() => handleRoleSelect("laborer")}
           >
-            <CardHeader className="flex-1 items-center text-center pb-2">
+            <CardHeader className="items-center text-center pb-2">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                 <Hammer className="h-6 w-6 text-primary" />
               </div>
               <CardTitle className="mt-2 text-foreground">{t("role.laborer")}</CardTitle>
               <CardDescription>{t("role.laborer.desc")}</CardDescription>
             </CardHeader>
-            <CardContent className="pt-0 text-center">
+            <CardContent className="flex flex-col pt-0 text-center">
               <Button className="w-full">{t("role.laborer")}</Button>
             </CardContent>
           </Card>
 
           <Card
-            className="flex w-72 cursor-pointer flex-col border-border transition-all hover:border-primary/40 hover:shadow-md"
+            className="w-72 cursor-pointer border-border transition-all hover:border-primary/40 hover:shadow-md"
             onClick={() => handleRoleSelect("contractor")}
           >
-            <CardHeader className="flex-1 items-center text-center pb-2">
+            <CardHeader className="items-center text-center pb-2">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                 <HardHat className="h-6 w-6 text-primary" />
               </div>
               <CardTitle className="mt-2 text-foreground">{t("role.contractor")}</CardTitle>
               <CardDescription>{t("role.contractor.desc")}</CardDescription>
             </CardHeader>
-            <CardContent className="pt-0 text-center">
+            <CardContent className="flex flex-col pt-0 text-center">
               <Button variant="outline" className="w-full">{t("role.contractor")}</Button>
             </CardContent>
           </Card>
