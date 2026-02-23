@@ -10,14 +10,15 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { StarRating } from "@/components/star-rating"
-import { Car, CircleOff, MapPin, ImageIcon, CheckCircle2 } from "lucide-react"
+import { Car, CircleOff, MapPin, ImageIcon, CheckCircle2, XCircle } from "lucide-react"
 import { toast } from "sonner"
 
 export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const { projects, hireRequests, laborers, currentUserId, updateHireRequest, addRating, hydrated } = useApp()
+  const { projects, hireRequests, laborers, currentUserId, updateHireRequest, addRating, addReport, hydrated } = useApp()
   const { t } = useLanguage()
 
   const [rateDialogOpen, setRateDialogOpen] = useState(false)
@@ -30,6 +31,12 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const [amendAmount, setAmendAmount] = useState("")
 
   const [completedRequests, setCompletedRequests] = useState<Set<string>>(new Set())
+
+  // Report dialog state (for job incomplete)
+  const [reportDialogOpen, setReportDialogOpen] = useState(false)
+  const [reportTargetType, setReportTargetType] = useState<"laborer" | "contractor">("laborer")
+  const [reportDescription, setReportDescription] = useState("")
+  const [reportRating, setReportRating] = useState(0)
 
   const project = projects.find((p) => p.id === id)
   const requests = hireRequests.filter((r) => r.projectId === id)
@@ -76,10 +83,23 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     toast.success("Amended offer sent to laborer!")
   }
 
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false)
+  const [paymentRequestId, setPaymentRequestId] = useState<string | null>(null)
+
   const handleJobCompleted = (requestId: string) => {
     updateHireRequest(requestId, { jobCompleted: true, status: "completed" })
     setCompletedRequests(prev => new Set(prev).add(requestId))
-    toast.success(t("project.paymentReceived"))
+    setPaymentRequestId(requestId)
+    setPaymentDialogOpen(true)
+  }
+
+  const handleJobIncomplete = (requestId: string) => {
+    const req = hireRequests.find(r => r.id === requestId)
+    if (!req) return
+    setReportTargetType("laborer")
+    setReportDescription("")
+    setReportRating(0)
+    setReportDialogOpen(true)
   }
 
   const handleRateClick = (laborerId: string) => {
@@ -205,17 +225,28 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                       </div>
                     )}
 
-                    {/* Job completed button */}
+                    {/* Job completed / incomplete buttons */}
                     {req.status === "accepted" && !showPaymentReceived && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleJobCompleted(req.id)}
-                        className="w-fit"
-                      >
-                        <CheckCircle2 className="mr-1.5 h-4 w-4" />
-                        {t("project.jobCompleted")}
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleJobCompleted(req.id)}
+                          className="w-fit"
+                        >
+                          <CheckCircle2 className="mr-1.5 h-4 w-4" />
+                          {t("project.jobCompleted")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleJobIncomplete(req.id)}
+                          className="w-fit"
+                        >
+                          <XCircle className="mr-1.5 h-4 w-4" />
+                          {t("project.jobIncomplete")}
+                        </Button>
+                      </div>
                     )}
 
                     {showPaymentReceived && (
@@ -282,6 +313,81 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           </div>
           <DialogFooter>
             <Button onClick={handleSubmitAmend}>{t("common.submit")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment received confirmation dialog */}
+      <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t("project.paymentReceived")}</DialogTitle>
+            <DialogDescription className="sr-only">Payment confirmation.</DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center gap-3 rounded-md bg-primary/10 px-4 py-4">
+            <CheckCircle2 className="h-6 w-6 text-primary" />
+            <p className="text-sm font-medium text-foreground">{t("project.paymentReceived")}</p>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setPaymentDialogOpen(false)}>OK</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Report dialog (job incomplete) */}
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("report.title")}</DialogTitle>
+            <DialogDescription className="sr-only">Submit a report for an incomplete job.</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <Label>{t("report.targetType")}</Label>
+              <Select value={reportTargetType} onValueChange={(v) => setReportTargetType(v as "laborer" | "contractor")}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="laborer">{t("report.laborer")}</SelectItem>
+                  <SelectItem value="contractor">{t("report.contractor")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label>{t("report.description")}</Label>
+              <Textarea
+                value={reportDescription}
+                onChange={(e) => setReportDescription(e.target.value)}
+                placeholder={t("report.description")}
+                rows={4}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label>{t("report.rating")}</Label>
+              <StarRating value={reportRating} onChange={setReportRating} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReportDialogOpen(false)}>{t("common.cancel")}</Button>
+            <Button onClick={() => {
+              if (!reportDescription.trim() || reportRating === 0) {
+                toast.error("Please fill in all fields.")
+                return
+              }
+              addReport({
+                id: `report-${Date.now()}`,
+                reporterId: currentUserId!,
+                reporterRole: "contractor",
+                projectId: id,
+                description: reportDescription.trim(),
+                rating: reportRating,
+                targetType: reportTargetType,
+                date: new Date().toISOString().split("T")[0],
+              })
+              setReportDialogOpen(false)
+              toast.success(t("report.success"))
+            }}>{t("report.submit")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

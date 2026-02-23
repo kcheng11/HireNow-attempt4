@@ -96,8 +96,6 @@ export const translations: TranslationMap = {
   "project.rateLaborer": { en: "Rate Laborer", hi: "मज़दूर को रेट करें" },
   "project.stars": { en: "Stars", hi: "सितारे" },
   "project.comment": { en: "Comment", hi: "टिप्पणी" },
-  "project.jobCompleted": { en: "Job Completed?", hi: "काम पूरा हुआ?" },
-  "project.paymentReceived": { en: "Payment Received", hi: "भुगतान प्राप्त हुआ" },
   "project.approveAmount": { en: "Approve", hi: "स्वीकृत करें" },
   "project.denyAmount": { en: "Deny", hi: "अस्वीकार करें" },
   "project.amendAmount": { en: "Amend Amount", hi: "राशि संशोधित करें" },
@@ -112,6 +110,25 @@ export const translations: TranslationMap = {
   "day.friday": { en: "Friday", hi: "शुक्रवार" },
   "day.saturday": { en: "Saturday", hi: "शनिवार" },
   "day.sunday": { en: "Sunday", hi: "रविवार" },
+
+  // Report
+  "report.title": { en: "Report User", hi: "उपयोगकर्ता की रिपोर्ट करें" },
+  "report.targetType": { en: "Report a", hi: "रिपोर्ट करें" },
+  "report.laborer": { en: "Laborer", hi: "मज़दूर" },
+  "report.contractor": { en: "Hirer", hi: "नियोक्ता" },
+  "report.selectProject": { en: "Select Project", hi: "परियोजना चुनें" },
+  "report.description": { en: "Description of Complaint", hi: "शिकायत का विवरण" },
+  "report.rating": { en: "Rating", hi: "रेटिंग" },
+  "report.submit": { en: "Submit Report", hi: "रिपोर्ट जमा करें" },
+  "report.success": { en: "Report submitted successfully.", hi: "रिपोर्ट सफलतापूर्वक जमा की गई।" },
+
+  // Project detail - job status
+  "project.jobCompleted": { en: "Job Completed", hi: "काम पूरा हुआ" },
+  "project.jobIncomplete": { en: "Job Incomplete", hi: "काम अधूरा" },
+  "project.paymentReceived": { en: "Payment Received", hi: "भुगतान प्राप्त हुआ" },
+
+  // Hirer rating
+  "project.rateHirer": { en: "Rate Hirer", hi: "नियोक्ता को रेट करें" },
 
   // Skills
   "skill.plumbing": { en: "Plumbing", hi: "प्लम्बिंग" },

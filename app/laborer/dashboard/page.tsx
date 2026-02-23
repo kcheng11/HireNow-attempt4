@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Calendar } from "@/components/ui/calendar"
 import { StarRating } from "@/components/star-rating"
@@ -16,7 +17,7 @@ import { Car, CircleOff, MapPin } from "lucide-react"
 import { toast } from "sonner"
 
 export default function LaborerDashboardPage() {
-  const { laborers, projects, hireRequests, contractors, currentUserId, updateHireRequest, hydrated } = useApp()
+  const { laborers, projects, hireRequests, contractors, currentUserId, updateHireRequest, addContractorRating, hydrated } = useApp()
   const { t } = useLanguage()
 
   const [pickupDialogOpen, setPickupDialogOpen] = useState(false)
@@ -25,6 +26,12 @@ export default function LaborerDashboardPage() {
   const [editPickup, setEditPickup] = useState("")
   const [editDropoff, setEditDropoff] = useState("")
   const [counterAmount, setCounterAmount] = useState("")
+
+  // Rate hirer state
+  const [rateHirerOpen, setRateHirerOpen] = useState(false)
+  const [rateHirerContractorId, setRateHirerContractorId] = useState<string | null>(null)
+  const [hirerStars, setHirerStars] = useState(0)
+  const [hirerComment, setHirerComment] = useState("")
 
   const laborer = laborers.find((l) => l.id === currentUserId)
   const myRequests = hireRequests.filter((r) => r.laborerId === currentUserId)
@@ -71,6 +78,26 @@ export default function LaborerDashboardPage() {
     })
     setCounterDialogOpen(false)
     toast.success("Counter offer sent!")
+  }
+
+  const handleRateHirerClick = (contractorId: string) => {
+    setRateHirerContractorId(contractorId)
+    setHirerStars(0)
+    setHirerComment("")
+    setRateHirerOpen(true)
+  }
+
+  const handleSubmitHirerRating = () => {
+    if (!rateHirerContractorId || hirerStars === 0) return
+    addContractorRating(rateHirerContractorId, {
+      laborerId: currentUserId!,
+      laborerName: laborer?.name ?? "",
+      stars: hirerStars,
+      comment: hirerComment.trim(),
+      date: new Date().toISOString().split("T")[0],
+    })
+    setRateHirerOpen(false)
+    toast.success("Rating submitted!")
   }
 
   if (!hydrated || !laborer) {
@@ -149,6 +176,9 @@ export default function LaborerDashboardPage() {
             {myRequests.map((req) => {
               const project = projects.find((p) => p.id === req.projectId)
               const contractor = contractors.find((c) => c.id === req.contractorId)
+              const contractorAvgRating = contractor && contractor.ratings.length > 0
+                ? contractor.ratings.reduce((sum, r) => sum + r.stars, 0) / contractor.ratings.length
+                : 0
               return (
                 <Card key={req.id} className="border-border">
                   <CardContent className="flex flex-col gap-2 pt-4">
@@ -158,6 +188,12 @@ export default function LaborerDashboardPage() {
                         <p className="text-xs text-muted-foreground">
                           {t("role.contractor")}: {contractor?.name ?? "Unknown"} &middot; {req.date}
                         </p>
+                        {contractorAvgRating > 0 && (
+                          <div className="mt-1 flex items-center gap-1">
+                            <StarRating value={Math.round(contractorAvgRating)} readonly size={14} />
+                            <span className="text-xs text-muted-foreground">({contractor!.ratings.length})</span>
+                          </div>
+                        )}
                       </div>
                       <Badge
                         variant={
@@ -197,6 +233,11 @@ export default function LaborerDashboardPage() {
                     )}
                     {req.status === "negotiating" && (
                       <p className="text-xs text-muted-foreground italic">Waiting for hirer response...</p>
+                    )}
+                    {(req.status === "completed" || req.jobCompleted) && contractor && (
+                      <Button size="sm" variant="outline" onClick={() => handleRateHirerClick(contractor.id)} className="w-fit">
+                        {t("project.rateHirer")}
+                      </Button>
                     )}
                   </CardContent>
                 </Card>
@@ -249,6 +290,29 @@ export default function LaborerDashboardPage() {
           </div>
           <DialogFooter>
             <Button onClick={handleSubmitCounter}>{t("common.submit")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rate Hirer dialog */}
+      <Dialog open={rateHirerOpen} onOpenChange={setRateHirerOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t("project.rateHirer")}</DialogTitle>
+            <DialogDescription className="sr-only">Rate the hirer.</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label>{t("project.stars")}</Label>
+              <StarRating value={hirerStars} onChange={setHirerStars} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label>{t("project.comment")}</Label>
+              <Textarea value={hirerComment} onChange={(e) => setHirerComment(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleSubmitHirerRating}>{t("common.submit")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -21,6 +21,7 @@ export interface Contractor {
   phone: string
   company: string
   location: string
+  ratings: ContractorRating[]
 }
 
 export interface Project {
@@ -54,6 +55,25 @@ export interface Rating {
   contractorName: string
   stars: number
   comment: string
+  date: string
+}
+
+export interface ContractorRating {
+  laborerId: string
+  laborerName: string
+  stars: number
+  comment: string
+  date: string
+}
+
+export interface Report {
+  id: string
+  reporterId: string
+  reporterRole: Role
+  projectId: string
+  description: string
+  rating: number
+  targetType: "laborer" | "contractor"
   date: string
 }
 

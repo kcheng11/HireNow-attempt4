@@ -103,6 +103,10 @@ export const seedContractors: Contractor[] = [
     phone: "+91 99887 76655",
     company: "Singh Constructions",
     location: "Mumbai",
+    ratings: [
+      { laborerId: "seed-laborer-1", laborerName: "Rajesh Kumar", stars: 5, comment: "Pays on time, great to work with.", date: "2026-01-16" },
+      { laborerId: "seed-laborer-2", laborerName: "Suresh Patel", stars: 4, comment: "Good communication.", date: "2026-02-02" },
+    ],
   },
   {
     id: "seed-contractor-2",
@@ -110,6 +114,9 @@ export const seedContractors: Contractor[] = [
     phone: "+91 88776 65544",
     company: "Sharma Builders",
     location: "Delhi",
+    ratings: [
+      { laborerId: "seed-laborer-4", laborerName: "Deepak Yadav", stars: 4, comment: "Fair and professional.", date: "2026-01-26" },
+    ],
   },
 ]
 

@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
-import type { Laborer, Contractor, Project, HireRequest, Rating, Role } from "@/lib/types"
+import type { Laborer, Contractor, Project, HireRequest, Rating, ContractorRating, Report, Role } from "@/lib/types"
 import { seedLaborers, seedContractors, seedProjects, seedHireRequests } from "@/lib/seed-data"
 
 interface AppState {
@@ -9,6 +9,7 @@ interface AppState {
   contractors: Contractor[]
   projects: Project[]
   hireRequests: HireRequest[]
+  reports: Report[]
   currentRole: Role | null
   currentUserId: string | null
   hydrated: boolean
@@ -23,6 +24,8 @@ interface AppContextType extends AppState {
   addHireRequest: (r: HireRequest) => void
   updateHireRequest: (id: string, updates: Partial<HireRequest>) => void
   addRating: (laborerId: string, rating: Rating) => void
+  addContractorRating: (contractorId: string, rating: ContractorRating) => void
+  addReport: (report: Report) => void
 }
 
 const AppContext = createContext<AppContextType | null>(null)
@@ -50,6 +53,7 @@ const defaultState: AppState = {
   contractors: seedContractors,
   projects: seedProjects,
   hireRequests: seedHireRequests,
+  reports: [],
   currentRole: null,
   currentUserId: null,
   hydrated: false,
@@ -113,6 +117,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }))
   }, [])
 
+  const addContractorRating = useCallback((contractorId: string, rating: ContractorRating) => {
+    setState((s) => ({
+      ...s,
+      contractors: s.contractors.map((c) =>
+        c.id === contractorId ? { ...c, ratings: [...c.ratings, rating] } : c
+      ),
+    }))
+  }, [])
+
+  const addReport = useCallback((report: Report) => {
+    setState((s) => ({ ...s, reports: [...s.reports, report] }))
+  }, [])
+
   return (
     <AppContext.Provider
       value={{
@@ -125,6 +142,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         addHireRequest,
         updateHireRequest,
         addRating,
+        addContractorRating,
+        addReport,
       }}
     >
       {children}
